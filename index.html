@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Столярная — конструктор мебели</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE6D8;
+    --paper-card:#F7F3EA;
+    --grid-line: rgba(38,50,63,0.09);
+    --ink:#26323F;
+    --ink-soft:#5B6774;
+    --walnut:#5B3A29;
+    --brass:#C08A3E;
+    --brass-dark:#A6741F;
+    --sage:#7A8B6F;
+    --line-thin: rgba(38,50,63,0.18);
+    --oak-mat:#C9A672;
+    --walnut-mat:#6B4226;
+    --white-mat:#F5F1E7;
+    --graphite-mat:#3B3F42;
+    --sage-mat:#8A9A7E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'IBM Plex Sans', sans-serif;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/28px 28px,
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  header{
+    padding:28px clamp(20px,4vw,56px) 8px;
+  }
+  header .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass-dark);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  header .eyebrow::before{
+    content:"";
+    width:22px;height:1px;background:var(--brass-dark);
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:clamp(28px,4vw,44px);
+    margin:6px 0 2px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    color:var(--ink-soft);
+    max-width:560px;
+    margin:0;
+    font-size:14.5px;
+    line-height:1.5;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap:24px;
+    padding: 12px clamp(20px,4vw,56px) 56px;
+    align-items:start;
+  }
+  @media (max-width: 900px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .canvas-card{
+    background:var(--paper-card);
+    border:1px solid var(--line-thin);
+    border-radius:4px;
+    position:relative;
+    overflow:hidden;
+  }
+  .canvas-card::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: linear-gradient(rgba(38,50,63,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(38,50,63,0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events:none;
+  }
+  .canvas-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:16px 20px 0;
+    position:relative;
+  }
+  .canvas-head .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.06em;
+  }
+  .canvas-head .modelno{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--brass-dark);
+  }
+  svg#draft{
+    width:100%;
+    height:auto;
+    display:block;
+    position:relative;
+  }
+  .price-strip{
+    position:relative;
+    border-top:1px solid var(--line-thin);
+    padding:16px 20px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .price-strip .total-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin-bottom:2px;
+  }
+  .price-strip .total-value{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:32px;
+    color:var(--ink);
+  }
+  .price-strip .breakdown{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    text-align:right;
+  }
+
+  .panel{
+    background:var(--paper-card);
+    border:1px solid var(--line-thin);
+    border-radius:4px;
+    padding:22px 22px 26px;
+  }
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:22px;
+    border-bottom:1px solid var(--line-thin);
+    padding-bottom:2px;
+  }
+  .tab{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.02em;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    padding:8px 4px 12px;
+    cursor:pointer;
+    position:relative;
+    border-bottom:2px solid transparent;
+    transition: color .15s ease;
+  }
+  .tab + .tab{margin-left:18px;}
+  .tab.active{
+    color:var(--ink);
+    border-bottom-color:var(--brass);
+  }
+  .tab:hover{color:var(--ink);}
+
+  .field{margin-bottom:20px;}
+  .field-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; font-weight:500; margin-bottom:8px;
+  }
+  .field-label span.val{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--brass-dark);
+    font-size:12.5px;
+  }
+  input[type=range]{
+    width:100%;
+    -webkit-appearance:none;
+    height:2px;
+    background:var(--line-thin);
+    border-radius:2px;
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:15px;height:15px;
+    border-radius:2px;
+    background:var(--walnut);
+    border:2px solid var(--paper-card);
+    box-shadow:0 0 0 1px var(--walnut);
+    cursor:pointer;
+    margin-top:-1px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:15px;height:15px;
+    border-radius:2px;
+    background:var(--walnut);
+    border:2px solid var(--paper-card);
+    box-shadow:0 0 0 1px var(--walnut);
+    cursor:pointer;
+  }
+
+  .stepper-row{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .stepper{
+    display:flex; align-items:center; gap:0;
+    border:1px solid var(--line-thin);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .stepper button{
+    width:30px; height:30px;
+    background:var(--paper);
+    border:none;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .stepper button:hover{background:var(--brass); color:#fff;}
+  .stepper .count{
+    width:34px; text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+  }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 0;
+    border-top:1px solid var(--grid-line);
+  }
+  .toggle-row:first-of-type{border-top:none;}
+  .toggle-row label.name{font-size:13.5px;}
+  .switch{
+    width:38px; height:20px;
+    border-radius:20px;
+    background:var(--line-thin);
+    position:relative;
+    cursor:pointer;
+    transition: background .15s ease;
+    flex-shrink:0;
+  }
+  .switch.on{background:var(--sage);}
+  .switch .knob{
+    position:absolute; top:2px; left:2px;
+    width:16px; height:16px; border-radius:50%;
+    background:#fff;
+    transition: left .15s ease;
+    box-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+  .switch.on .knob{left:20px;}
+
+  .swatches{display:flex; gap:10px; margin-top:8px;}
+  .swatch{
+    width:34px; height:34px;
+    border-radius:3px;
+    cursor:pointer;
+    border:2px solid transparent;
+    position:relative;
+  }
+  .swatch.selected{border-color:var(--ink);}
+  .swatch.selected::after{
+    content:"✓";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:14px; mix-blend-mode:difference;
+  }
+
+  .hidden{display:none !important;}
+
+  .cta{
+    margin-top:22px;
+    width:100%;
+    background:var(--walnut);
+    color:#F7F3EA;
+    border:none;
+    padding:14px 18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    border-radius:3px;
+    cursor:pointer;
+    transition: background .15s ease;
+  }
+  .cta:hover{background:#4a2f21;}
+  .note{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    line-height:1.5;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:#F7F3EA;
+    padding:14px 20px;
+    border-radius:4px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    max-width:420px;
+    opacity:0;
+    pointer-events:none;
+    transition: all .25s ease;
+    z-index:10;
+    line-height:1.5;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Конструктор № 01 — корпусная мебель</div>
+  <h1>Соберите шкаф под свою стену</h1>
+  <p>Задайте размеры, наполнение и материал — чертёж и цена пересчитываются сразу. Готовую конфигурацию можно отправить в замер.</p>
+</header>
+
+<div class="layout">
+
+  <div class="canvas-card">
+    <div class="canvas-head">
+      <span class="tag">Фронтальная проекция</span>
+      <span class="modelno" id="modelno">МОД. ШК-01</span>
+    </div>
+    <svg id="draft" viewBox="0 0 640 500" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="price-strip">
+      <div>
+        <div class="total-label">Стоимость</div>
+        <div class="total-value" id="totalPrice">0 ₽</div>
+      </div>
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="tabs">
+      <button class="tab active" data-type="wardrobe">Шкаф</button>
+      <button class="tab" data-type="shelf">Стеллаж</button>
+      <button class="tab" data-type="chest">Комод</button>
+    </div>
+
+    <div class="field">
+      <div class="field-label"><span>Ширина</span><span class="val" id="widthVal">90 см</span></div>
+      <input type="range" id="width" min="60" max="120" step="5" value="90">
+    </div>
+    <div class="field">
+      <div class="field-label"><span>Высота</span><span class="val" id="heightVal">200 см</span></div>
+      <input type="range" id="height" min="120" max="220" step="10" value="200">
+    </div>
+    <div class="field">
+      <div class="field-label"><span>Глубина</span><span class="val" id="depthVal">45 см</span></div>
+      <input type="range" id="depth" min="30" max="60" step="5" value="45">
+    </div>
+
+    <div class="field" id="shelvesField">
+      <div class="stepper-row">
+        <label class="name" style="font-size:13.5px;">Полки</label>
+        <div class="stepper">
+          <button data-step="shelves" data-dir="-1">−</button>
+          <span class="count" id="shelvesCount">3</span>
+          <button data-step="shelves" data-dir="1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" id="drawersField">
+      <div class="stepper-row">
+        <label class="name" style="font-size:13.5px;">Ящики</label>
+        <div class="stepper">
+          <button data-step="drawers" data-dir="-1">−</button>
+          <span class="count" id="drawersCount">0</span>
+          <button data-step="drawers" data-dir="1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="openShelfField" class="toggle-row hidden">
+      <label class="name">Открытая полка в остатке высоты</label>
+      <div class="switch" id="openShelfToggle"><div class="knob"></div></div>
+    </div>
+
+    <div id="doorsField" class="toggle-row">
+      <label class="name">Дверцы</label>
+      <div class="switch on" id="doorsToggle"><div class="knob"></div></div>
+    </div>
+    <div class="toggle-row">
+      <label class="name">Ножки</label>
+      <div class="switch" id="legsToggle"><div class="knob"></div></div>
+    </div>
+
+    <div class="field" style="margin-top:18px;">
+      <div class="field-label"><span>Материал фасада</span></div>
+      <div class="swatches">
+        <div class="swatch selected" data-mat="oak" style="background:var(--oak-mat)" title="Дуб"></div>
+        <div class="swatch" data-mat="walnut" style="background:var(--walnut-mat)" title="Орех"></div>
+        <div class="swatch" data-mat="white" style="background:var(--white-mat); border:1px solid var(--line-thin);" title="Белый"></div>
+        <div class="swatch" data-mat="graphite" style="background:var(--graphite-mat)" title="Графит"></div>
+        <div class="swatch" data-mat="sage" style="background:var(--sage-mat)" title="Шалфей"></div>
+      </div>
+    </div>
+
+    <button class="cta" id="orderBtn">Отправить на замер</button>
+    <div class="note">Демо-конструктор: расчёт и чертёж считаются на клиенте. Для реального сайта кнопка выше должна отправлять JSON-конфигурацию на бэкенд (CRM/1С, API склада и т.д.) — заглушка ниже показывает, что уйдёт в запрос.</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const state = {
+    type: 'wardrobe',
+    width: 90,
+    height: 200,
+    depth: 45,
+    shelves: 3,
+    drawers: 0,
+    doors: true,
+    legs: false,
+    material: 'oak',
+    openShelf: false
+  };
+
+  const MAX_SLOTS = 5; // ярусов на всю высоту фасада (для ящиков в полную высоту)
+
+  const materials = {
+    oak:      { front:'#C9A672', side:'#B4905F', top:'#DAB989', name:'Дуб',    mult:1.00 },
+    walnut:   { front:'#6B4226', side:'#5A3620', top:'#7C5033', name:'Орех',   mult:1.15 },
+    white:    { front:'#F5F1E7', side:'#E4E0D4', top:'#FFFDF7', name:'Белый',  mult:0.95 },
+    graphite: { front:'#3B3F42', side:'#2E3134', top:'#4C5155', name:'Графит', mult:1.05 },
+    sage:     { front:'#8A9A7E', side:'#76856C', top:'#9CAC8F', name:'Шалфей', mult:1.08 }
+  };
+
+  const typeDefaults = {
+    wardrobe: { shelves:3, drawers:0, doors:true,  legs:false, label:'ШК', showShelves:true,  showDrawers:true,  showDoors:true },
+    shelf:    { shelves:4, drawers:0, doors:false, legs:false, label:'СТ', showShelves:true,  showDrawers:false, showDoors:false },
+    chest:    { shelves:0, drawers:4, doors:false, legs:true,  label:'КМ', showShelves:false, showDrawers:true,  showDoors:false }
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const svg = $('draft');
+
+  function fmt(n){ return n.toLocaleString('ru-RU'); }
+
+  function calcPrice(){
+    const base = 6900;
+    const w = (state.width - 60) * 45;
+    const h = (state.height - 120) * 22;
+    const d = (state.depth - 30) * 20;
+    const shelves = state.shelves * 650;
+    const drawers = state.drawers * 2200;
+    const doors = (state.doors && typeDefaults[state.type].showDoors) ? 3200 : 0;
+    const legs = state.legs ? 450 : 0;
+    const td = typeDefaults[state.type];
+    const usedSlots = td.showDrawers ? state.drawers : 0;
+    const canOpenShelf = td.showDrawers && !td.showShelves && usedSlots < MAX_SLOTS;
+    const openShelf = (state.openShelf && canOpenShelf) ? 900 : 0;
+    const subtotal = base + w + h + d + shelves + drawers + doors + legs + openShelf;
+    const mult = materials[state.material].mult;
+    const total = Math.round((subtotal * mult) / 10) * 10;
+    return { base, w, h, d, shelves, drawers, doors, legs, openShelf, mult, total };
+  }
+
+  function renderPrice(){
+    const p = calcPrice();
+    $('totalPrice').textContent = fmt(p.total) + ' ₽';
+    const lines = [
+      'корпус ' + fmt(p.base + p.w + p.h + p.d) + ' ₽',
+    ];
+    if(p.shelves) lines.push('полки ' + fmt(p.shelves) + ' ₽');
+    if(p.drawers) lines.push('ящики ' + fmt(p.drawers) + ' ₽');
+    if(p.doors) lines.push('дверцы ' + fmt(p.doors) + ' ₽');
+    if(p.legs) lines.push('ножки ' + fmt(p.legs) + ' ₽');
+    if(p.openShelf) lines.push('открытая полка ' + fmt(p.openShelf) + ' ₽');
+    lines.push('материал ×' + p.mult.toFixed(2));
+    $('breakdown').innerHTML = lines.join('<br>');
+  }
+
+  function renderDraft(){
+    const VB_W = 640, VB_H = 500;
+    const scale = 2.15;
+    const oblique = 0.5;
+
+    const FW = state.width * scale;
+    const FH = state.height * scale;
+    const OFF = state.depth * scale * oblique;
+
+    const FX = (VB_W - FW - OFF) / 2;
+    const FY = VB_H - 55 - FH;
+
+    const mat = materials[state.material];
+    const ink = 'var(--ink)';
+
+    let parts = [];
+
+    // ground line
+    parts.push(`<line x1="${FX-40}" y1="${FY+FH+2}" x2="${FX+FW+OFF+40}" y2="${FY+FH+2}" stroke="${ink}" stroke-width="1" opacity="0.35"/>`);
+
+    // top face (oblique)
+    parts.push(`<polygon points="${FX},${FY} ${FX+FW},${FY} ${FX+FW+OFF},${FY-OFF} ${FX+OFF},${FY-OFF}" fill="${mat.top}" stroke="${ink}" stroke-width="1"/>`);
+    // side face (oblique)
+    parts.push(`<polygon points="${FX+FW},${FY} ${FX+FW+OFF},${FY-OFF} ${FX+FW+OFF},${FY-OFF+FH} ${FX+FW},${FY+FH}" fill="${mat.side}" stroke="${ink}" stroke-width="1"/>`);
+    // front face
+    parts.push(`<rect x="${FX}" y="${FY}" width="${FW}" height="${FH}" fill="${mat.front}" stroke="${ink}" stroke-width="1.4"/>`);
+
+    // defs: тени и градиенты для объёма
+    parts.push(`<defs>
+      <filter id="softShadow" x="-30%" y="-60%" width="160%" height="240%">
+        <feGaussianBlur stdDeviation="1.7"/>
+      </filter>
+      <linearGradient id="drawerSheen" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.20"/>
+        <stop offset="14%" stop-color="#ffffff" stop-opacity="0"/>
+        <stop offset="86%" stop-color="#000000" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.20"/>
+      </linearGradient>
+      <linearGradient id="openShelfShade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#000000" stop-opacity="0.35"/>
+        <stop offset="26%" stop-color="#000000" stop-opacity="0.07"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+      </linearGradient>
+      <clipPath id="caseInterior">
+        <rect x="${FX}" y="${FY}" width="${FW}" height="${FH}"/>
+      </clipPath>
+    </defs>`);
+
+    // legs
+    if(state.legs){
+      const legW = 8, legH = 18;
+      parts.push(`<ellipse cx="${FX+14}" cy="${FY+FH+legH+3}" rx="10" ry="3" fill="black" opacity="0.16" filter="url(#softShadow)"/>`);
+      parts.push(`<ellipse cx="${FX+FW-14}" cy="${FY+FH+legH+3}" rx="10" ry="3" fill="black" opacity="0.16" filter="url(#softShadow)"/>`);
+      parts.push(`<rect x="${FX+10}" y="${FY+FH+2}" width="${legW}" height="${legH}" fill="${ink}" opacity="0.75"/>`);
+      parts.push(`<rect x="${FX+FW-10-legW}" y="${FY+FH+2}" width="${legW}" height="${legH}" fill="${ink}" opacity="0.75"/>`);
+    }
+
+    const shelfDepthOff = OFF * 0.86; // полка чуть меньше уходит вглубь, чем сам корпус (стенки съедают немного глубины)
+    const shelfThickness = 3.6;
+    function shelfPlank(x1, x2, y){
+      const y2 = y + shelfThickness;
+      let s = '';
+      // тень от полки на поверхность под ней
+      s += `<rect x="${x1-2}" y="${y2+1.5}" width="${x2-x1+4}" height="6" fill="black" opacity="0.17" filter="url(#softShadow)"/>`;
+      // верхняя грань полки, уходящая в глубину корпуса (тот же угол, что у верха/боковины корпуса) — обрезается по контуру корпуса, боковой торец наружу не вылезает
+      s += `<polygon points="${x1},${y} ${x2},${y} ${x2+shelfDepthOff},${y-shelfDepthOff} ${x1+shelfDepthOff},${y-shelfDepthOff}" fill="${mat.top}" stroke="${ink}" stroke-width="0.6" opacity="0.95"/>`;
+      // передний торец полки (лицевая толщина, обращённая к зрителю)
+      s += `<rect x="${x1}" y="${y}" width="${x2-x1}" height="${shelfThickness}" fill="${mat.front}" stroke="${ink}" stroke-width="0.7" opacity="0.97"/>`;
+      return s;
+    }
+
+    const td = typeDefaults[state.type];
+    // ящики теперь занимают слоты на всю высоту фасада, растут снизу вверх
+    const usedSlots = td.showDrawers ? state.drawers : 0;
+    const slotH = FH / MAX_SLOTS;
+    const drawerZoneH = usedSlots * slotH;
+
+    let interior = [];
+
+    // полки — в оставшейся (над ящиками) зоне, если тип это поддерживает
+    const shelfZoneH = FH - drawerZoneH;
+    if(td.showShelves && state.shelves > 0){
+      for(let i=1;i<=state.shelves;i++){
+        const y = FY + shelfZoneH * (i/(state.shelves+1));
+        interior.push(shelfPlank(FX+6, FX+FW-6, y));
+      }
+    }
+
+    // ящики: слот за слотом, снизу вверх, во всю ширину фасада
+    if(usedSlots > 0){
+      const gap = 5;
+      for(let i=0;i<usedSlots;i++){
+        const y = FY + FH - (i+1)*slotH + gap/2;
+        const h = slotH - gap;
+        // тень-реверс под каждым ящиком (стык между ярусами)
+        interior.push(`<rect x="${FX+4}" y="${y+h}" width="${FW-8}" height="5" fill="black" opacity="0.20" filter="url(#softShadow)"/>`);
+        // фасад ящика
+        interior.push(`<rect x="${FX+6}" y="${y}" width="${FW-12}" height="${h}" fill="${mat.front}" stroke="${ink}" stroke-width="1" opacity="0.97"/>`);
+        // лёгкий блик сверху / затемнение снизу для объёма
+        interior.push(`<rect x="${FX+6}" y="${y}" width="${FW-12}" height="${h}" fill="url(#drawerSheen)"/>`);
+        // ручка с собственной тенью
+        const hy = y + h/2;
+        interior.push(`<rect x="${FX+FW/2-15}" y="${hy-1}" width="32" height="2.6" rx="1.3" fill="black" opacity="0.25" filter="url(#softShadow)"/>`);
+        interior.push(`<rect x="${FX+FW/2-16}" y="${hy-1.6}" width="32" height="2.6" rx="1.3" fill="${ink}" opacity="0.9"/>`);
+      }
+    }
+
+    // оставшееся пространство над ящиками: открытая полка без дверцы (по кнопке клиента) — только для типов без дверец (комод)
+    const remainingSlots = MAX_SLOTS - usedSlots;
+    const canOpenShelf = td.showDrawers && !td.showShelves && remainingSlots > 0;
+    if(canOpenShelf && shelfZoneH > 2){
+      const remY = FY;
+      const remH = shelfZoneH;
+      if(state.openShelf){
+        // ниша: затемнение в глубину + пунктирный контур проёма
+        interior.push(`<rect x="${FX+3}" y="${remY+3}" width="${FW-6}" height="${remH-6}" fill="${mat.side}" opacity="0.55"/>`);
+        interior.push(`<rect x="${FX+3}" y="${remY+3}" width="${FW-6}" height="${Math.min(remH*0.45, 30)}" fill="url(#openShelfShade)"/>`);
+        interior.push(`<rect x="${FX+3}" y="${remY+3}" width="${FW-6}" height="${remH-6}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="3 3" opacity="0.65"/>`);
+        // если высота позволяет — добавляем среднюю полку внутри проёма, уходящую вглубь
+        if(remH > slotH*1.7){
+          const midY = remY + remH*0.52;
+          interior.push(shelfPlank(FX+7, FX+FW-7, midY));
+        }
+      } else {
+        // без открытой полки — просто закрытый глухой верх, обозначаем стык тонкой линией
+        if(usedSlots > 0){
+          interior.push(`<line x1="${FX+2}" y1="${remY+remH}" x2="${FX+FW-2}" y2="${remY+remH}" stroke="${ink}" stroke-width="0.7" opacity="0.4"/>`);
+        }
+      }
+    }
+
+    // всё внутреннее наполнение обрезается по контуру фасада — ничего не должно вылезать за корпус
+    parts.push(`<g clip-path="url(#caseInterior)">${interior.join('')}</g>`);
+
+    // doors
+    if(state.doors && typeDefaults[state.type].showDoors){
+      const midX = FX + FW/2;
+      parts.push(`<line x1="${midX}" y1="${FY+4}" x2="${midX}" y2="${FY+FH-4}" stroke="${ink}" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>`);
+      parts.push(`<rect x="${FX+8}" y="${FY+8}" width="${FW/2-14}" height="${FH-16}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>`);
+      parts.push(`<rect x="${midX+6}" y="${FY+8}" width="${FW/2-14}" height="${FH-16}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>`);
+      parts.push(`<circle cx="${midX-16}" cy="${FY+FH/2}" r="2.6" fill="${ink}"/>`);
+      parts.push(`<circle cx="${midX+16}" cy="${FY+FH/2}" r="2.6" fill="${ink}"/>`);
+    }
+
+    // width dimension (top)
+    const dimY = FY - OFF - 22;
+    parts.push(`<line x1="${FX}" y1="${dimY}" x2="${FX+FW}" y2="${dimY}" stroke="${ink}" stroke-width="0.8"/>`);
+    parts.push(`<line x1="${FX}" y1="${dimY-5}" x2="${FX}" y2="${dimY+5}" stroke="${ink}" stroke-width="0.8"/>`);
+    parts.push(`<line x1="${FX+FW}" y1="${dimY-5}" x2="${FX+FW}" y2="${dimY+5}" stroke="${ink}" stroke-width="0.8"/>`);
+    parts.push(`<text x="${FX+FW/2}" y="${dimY-8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="${ink}">${state.width} см</text>`);
+
+    // height dimension (left)
+    const dimX = FX - 26;
+    parts.push(`<line x1="${dimX}" y1="${FY}" x2="${dimX}" y2="${FY+FH}" stroke="${ink}" stroke-width="0.8"/>`);
+    parts.push(`<line x1="${dimX-5}" y1="${FY}" x2="${dimX+5}" y2="${FY}" stroke="${ink}" stroke-width="0.8"/>`);
+    parts.push(`<line x1="${dimX-5}" y1="${FY+FH}" x2="${dimX+5}" y2="${FY+FH}" stroke="${ink}" stroke-width="0.8"/>`);
+    parts.push(`<text x="${dimX-8}" y="${FY+FH/2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="${ink}" transform="rotate(-90 ${dimX-8} ${FY+FH/2})">${state.height} см</text>`);
+
+    // depth label
+    parts.push(`<text x="${FX+FW+OFF/2+4}" y="${FY-OFF+12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${ink}" opacity="0.75">Г ${state.depth} см</text>`);
+
+    svg.innerHTML = parts.join('');
+  }
+
+  function applyTypeVisibility(){
+    const d = typeDefaults[state.type];
+    $('shelvesField').classList.toggle('hidden', !d.showShelves);
+    $('drawersField').classList.toggle('hidden', !d.showDrawers);
+    $('doorsField').classList.toggle('hidden', !d.showDoors);
+    $('openShelfField').classList.toggle('hidden', !(d.showDrawers && !d.showShelves));
+    $('modelno').textContent = 'МОД. ' + d.label + '-01';
+  }
+
+  function render(){
+    $('widthVal').textContent = state.width + ' см';
+    $('heightVal').textContent = state.height + ' см';
+    $('depthVal').textContent = state.depth + ' см';
+    $('shelvesCount').textContent = state.shelves;
+    $('drawersCount').textContent = state.drawers;
+    renderDraft();
+    renderPrice();
+  }
+
+  // events
+  ['width','height','depth'].forEach(key=>{
+    $(key).addEventListener('input', e=>{
+      state[key] = Number(e.target.value);
+      render();
+    });
+  });
+
+  document.querySelectorAll('.stepper button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.step;
+      const dir = Number(btn.dataset.dir);
+      const max = key === 'shelves' ? 6 : MAX_SLOTS;
+      state[key] = Math.min(max, Math.max(0, state[key] + dir));
+      render();
+    });
+  });
+
+  $('doorsToggle').addEventListener('click', ()=>{
+    state.doors = !state.doors;
+    $('doorsToggle').classList.toggle('on', state.doors);
+    render();
+  });
+  $('legsToggle').addEventListener('click', ()=>{
+    state.legs = !state.legs;
+    $('legsToggle').classList.toggle('on', state.legs);
+    render();
+  });
+  $('openShelfToggle').addEventListener('click', ()=>{
+    state.openShelf = !state.openShelf;
+    $('openShelfToggle').classList.toggle('on', state.openShelf);
+    render();
+  });
+
+  document.querySelectorAll('.swatch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
+      sw.classList.add('selected');
+      state.material = sw.dataset.mat;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      state.type = tab.dataset.type;
+      const d = typeDefaults[state.type];
+      state.shelves = d.shelves;
+      state.drawers = d.drawers;
+      state.doors = d.doors;
+      state.legs = d.legs;
+      state.openShelf = false;
+      $('doorsToggle').classList.toggle('on', state.doors);
+      $('legsToggle').classList.toggle('on', state.legs);
+      $('openShelfToggle').classList.toggle('on', state.openShelf);
+      applyTypeVisibility();
+      render();
+    });
+  });
+
+  let toastTimer;
+  $('orderBtn').addEventListener('click', ()=>{
+    const p = calcPrice();
+    const payload = {
+      type: state.type,
+      width_cm: state.width,
+      height_cm: state.height,
+      depth_cm: state.depth,
+      shelves: state.shelves,
+      drawers: state.drawers,
+      doors: state.doors && typeDefaults[state.type].showDoors,
+      legs: state.legs,
+      open_shelf: state.openShelf,
+      material: materials[state.material].name,
+      price_rub: p.total
+    };
+    // В реальном проекте здесь вызывается ваш backend, например:
+    // fetch('/api/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+    console.log('Конфигурация для отправки на сервер:', payload);
+    const t = $('toast');
+    t.textContent = 'Заявка сформирована · ' + payload.type + ' ' + payload.width_cm + '×' + payload.height_cm + '×' + payload.depth_cm + ' см · ' + fmt(p.total) + ' ₽. Конфигурация выведена в консоль (F12) — так на реальном сайте выглядит JSON перед отправкой на сервер.';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 5000);
+  });
+
+  applyTypeVisibility();
+  render();
+})();
+</script>
+</body>
+</html>
